@@ -40,8 +40,8 @@ class BasculaThread(QtCore.QThread):
       
       if p["flags1"] & BasculaIBR.FLAG1_OFFRANGE:
         self.lblpesoout.setText("Fuori scala!")
-      if p["flags1"] & BasculaIBR.FLAG1_UNDERLOAD:
-        self.lblpesoout.setText("Sottocarico!")
+#      if p["flags1"] & BasculaIBR.FLAG1_UNDERLOAD:
+#        self.lblpesoout.setText("Sottocarico!")
       if p["flags1"] & BasculaIBR.FLAG1_OVERLOAD:
         self.lblpesoout.setText("Sovraccarico!")
       if p["flags1"] & BasculaIBR.FLAG1_STABILE:
@@ -159,7 +159,7 @@ class BasculaGUI(QtGui.QWidget):
 
 app = QtGui.QApplication(sys.argv)
 w = BasculaGUI()
-w.show()
+w.showFullscreen()
 
 
 sys.exit(app.exec_())

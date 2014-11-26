@@ -129,7 +129,7 @@ class BasculaIBR:
     else:
       data2 = "-"+data[22:22+7]
     
-    ret["peso"] = float(data2)*self.div 
+    ret["peso"] = float(data2)*self.div*0.1
     #print ">PESA"
     time.sleep(0.5)
     self.L.release()
