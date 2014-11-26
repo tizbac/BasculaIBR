@@ -102,8 +102,9 @@ class BasculaIBR:
     self.ser.write(self.calcolaCheckSum(START+str(self.indirizzomaster)+str(self.indirizzo)+"01"+SEP+CHKSUMPLACEHOLDER))
     d = self.recvdata()
     print str([d])
+    if len(d) < 23:
+      print "Errore configurazione, "+str([d])
     self.div = DIVS[d[22:24]]
-    self.azzera()
     self.recvdata()
     print _GREEN+"Fatto, divisione: "+str(self.div)+_NOFORM
     time.sleep(0.5)
@@ -136,7 +137,12 @@ class BasculaIBR:
     
     return ret
   def azzera(self):
+    self.L.acquire()
     self.ser.write(self.calcolaCheckSum(START+str(self.indirizzomaster)+str(self.indirizzo)+"21"+SEP+CHKSUMPLACEHOLDER))
+    d = self.recvdata()
+    time.sleep(0.3)
+    self.L.release()
+    return d
   def azzeraTara(self):
     self.L.acquire()
     d = START+str(self.indirizzomaster)+str(self.indirizzo)+"220"+SEP+CHKSUMPLACEHOLDER

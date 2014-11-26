@@ -26,9 +26,10 @@ class BasculaThread(QtCore.QThread):
     self.lblpesoout = lblpesoout
     self.lbltaraout = lbltaraout
     self.Bascula = Bascula
-    self.Bascula.connect()
+    
     self.MW = MW
   def run(self):
+    self.Bascula.connect()
     while True:
       time.sleep(0.1)
       p = self.Bascula.pesa()
@@ -55,19 +56,25 @@ class BasculaThread(QtCore.QThread):
       
       
 class ImpostaTaraThread(QtCore.QThread):
-  def __init__(self, Bascula,tarabt,lbltara, tara=None):
+  def __init__(self, MW):
     QtCore.QThread.__init__(self)
-    self.tara = tara
-    self.Bascula = Bascula
-    self.tarabt = tarabt
-    self.lbltara = lbltara
+    self.MW = MW
   def run(self):
-    self.tarabt.setEnabled(False)
-    
-    self.lbltara.setText(str(self.Bascula.impostaTara(float(self.tara) if self.tara != None else None)))
     
     
-    self.tarabt.setEnabled(True)
+    basc.azzeraTara()
+    self.MW.btAzzera.setEnabled(1)
+
+class AzzeraThread(QtCore.QThread):
+  def __init__(self, MW):
+    QtCore.QThread.__init__(self)
+    self.MW = MW
+  def run(self):
+    
+    
+    basc.azzera()
+    self.MW.btAzzeraBilancia.setEnabled(1)
+
 
 class BasculaGUI(QtGui.QWidget):
   def __init__(self):
@@ -89,7 +96,7 @@ class BasculaGUI(QtGui.QWidget):
 
     self.lblpesoout = QtGui.QLabel(self)
     self.lblpesoout.setText("------ Kg")
-    self.lblpesoout.setStyleSheet("font-size: 72pt; border: 2px solid; background-color: #000000; color: #ff0000;qproperty-alignment: AlignRight;")
+    self.lblpesoout.setStyleSheet("font-size: 52pt; border: 2px solid; background-color: #000000; color: #ff0000;qproperty-alignment: AlignRight;")
     hbox1.addWidget(self.lblpesoout)
 
     self.editor = QtGui.QTextEdit()
@@ -107,26 +114,33 @@ class BasculaGUI(QtGui.QWidget):
 
     self.lbltaraout = QtGui.QLabel(self)
     self.lbltaraout.setText("%0.1f Kg"%self.tara)
-    self.lbltaraout.setStyleSheet("font-size: 72pt; border: 2px solid; background-color: #000000; color: #ff0000;qproperty-alignment: AlignRight;")
+    self.lbltaraout.setStyleSheet("font-size: 52pt; border: 2px solid; background-color: #000000; color: #ff0000;qproperty-alignment: AlignRight;")
     hbox2.addWidget(self.lbltaraout)
 
+   
+    hbox4 = QtGui.QHBoxLayout()
+    self.btAzzeraBilancia = QtGui.QPushButton(self)
+    self.btAzzeraBilancia.setStyleSheet("font-size: 25pt;")
+    self.btAzzeraBilancia.setText("Azzera bilancia")
+    hbox4.addWidget(self.btAzzeraBilancia)
+    vbox1.addLayout(hbox4)
     vbox1.addStretch()
-
+    
     hbox3 = QtGui.QHBoxLayout()
     self.btAzzera = QtGui.QPushButton(self)
-    self.btAzzera.setStyleSheet("font-size: 45pt;")
+    self.btAzzera.setStyleSheet("font-size: 25pt;")
     self.btAzzera.setText("Azzera tara")
     hbox3.addWidget(self.btAzzera)
     self.btTaraManuale = QtGui.QPushButton(self)
-    self.btTaraManuale.setStyleSheet("font-size: 45pt;")
+    self.btTaraManuale.setStyleSheet("font-size: 25pt;")
     self.btTaraManuale.setText("Tara manuale")
     hbox3.addWidget(self.btTaraManuale)
     self.btTara = QtGui.QPushButton(self)
-    self.btTara.setStyleSheet("font-size: 45pt;")
+    self.btTara.setStyleSheet("font-size: 25pt;")
     self.btTara.setText("Tara")
     hbox3.addWidget(self.btTara)
     self.btStampa = QtGui.QPushButton(self)
-    self.btStampa.setStyleSheet("font-size: 45pt;")
+    self.btStampa.setStyleSheet("font-size: 25pt;")
     self.btStampa.setText("Stampa")
     hbox3.addWidget(self.btStampa)
     vbox1.addLayout(hbox3)
@@ -134,13 +148,21 @@ class BasculaGUI(QtGui.QWidget):
     self.btTara.clicked.connect(self.taraClick)
     self.btAzzera.clicked.connect(self.azzeraClick)
     self.btStampa.clicked.connect(self.stampa)
+    self.btAzzeraBilancia.clicked.connect(self.azzeraBilClick)
     self.setLayout(vbox1)
     basc.azzeraTara()
     self.bt = BasculaThread(self,self.lblpesoout,self.lbltaraout,basc)
     self.bt.start()
+  def azzeraBilClick(self):
+    self.btAzzeraBilancia.setEnabled(0)
+    self.ath = AzzeraThread(self)
+    self.ath.start()
   def azzeraClick(self):
+    self.btAzzera.setEnabled(0)
     self.tara = 0.0
     self.lbltaraout.setText("%0.1f Kg"%self.tara)
+    self.ith = ImpostaTaraThread(self)
+    self.ith.start()
   def taraManualeClick(self):
     val , ok = QtGui.QInputDialog.getInt(self,"","Inserisci tara",0,0,1000000,int(basc.div))
     if ok:
@@ -159,7 +181,7 @@ class BasculaGUI(QtGui.QWidget):
 
 app = QtGui.QApplication(sys.argv)
 w = BasculaGUI()
-w.showFullscreen()
+w.showFullScreen()
 
 
 sys.exit(app.exec_())
